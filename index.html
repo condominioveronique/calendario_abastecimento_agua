@@ -1,604 +1,442 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><script type="text/javascript">
-    var gk_isXlsx = false;
-    var gk_xlsxFileLookup = {};
-    var gk_fileData = {};
-    function filledCell(cell) {
-        return cell !== '' && cell != null;
-    }
-    function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                    row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                    headerRowIndex = 0;
-                }
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-    }
-</script>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário 2025</title>
+    <title>Calendário de Abastecimento de Água</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --text-color: #1f2937;
-            --month-bg: #ffffff;
-            --month-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --current-month-border: #7c3aed;
-            --alternado1: rgba(59, 130, 246, 0.7);
-            --alternado2: rgba(34, 197, 94, 0.7);
+        :root{
+            --bg-color:#f0f2f5;--text-color:#1f2937;--month-bg:#fff;
+            --month-shadow:0 4px 12px rgba(0,0,0,.08);--current-month-border:#7c3aed;
+            --alternado1:rgba(59,130,246,.7);--alternado2:rgba(34,197,94,.7);
+            --header-bg:#e5e7eb;--header-text:#374151;
         }
-
-        [data-theme="dark"] {
-            --bg-color: #1f2937;
-            --text-color: #f3f4f6;
-            --month-bg: #374151;
-            --month-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            --current-month-border: #a78bfa;
+        [data-theme="dark"]{
+            --bg-color:#1f2937;--text-color:#f3f4f6;--month-bg:#374151;
+            --month-shadow:0 4px 12px rgba(0,0,0,.2);--current-month-border:#a78bfa;
+            --header-bg:#4b5563;--header-text:#f9fafb;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
+        *, *::before, *::after{box-sizing:border-box;}
+        body{
+            font-family:'Inter',sans-serif;
+            background:var(--bg-color);
+            color:var(--text-color);
+            margin:0;
+            padding:16px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            min-height:100vh;
+            font-size:16px;
         }
-
-        h1 {
-            text-align: center;
-            margin: 0 0 20px;
-            font-size: 2em;
-            font-weight: 600;
-            letter-spacing: 0.02em;
+        h1{
+            text-align:center;
+            margin:0 0 16px;
+            font-size:clamp(1.6rem, 4vw, 1.9rem);
+            font-weight:600;
+            line-height:1.3;
         }
-
-        .calendar {
-            display: flex;
-            justify-content: center;
-            max-width: 1200px;
-            width: 100%;
+        .calendar{
+            width:100%;
+            max-width:1400px;
+            margin:0 auto;
         }
-
-        .calendar-container {
-            display: grid;
-            grid-template-columns: minmax(360px, 400px) 2fr;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            box-sizing: border-box;
+        .calendar-container{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:20px;
+            width:100%;
         }
-
-        .current-month-container {
-            grid-column: 1;
-            max-width: 400px;
-            width: 100%;
+        .current-month-container{
+            width:100%;
+            max-width:100%;
         }
-
-        .other-months-container {
-            grid-column: 2;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
+        .other-months-container{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+            gap:16px;
+            width:100%;
         }
-
-        .month {
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            margin: 10px 0;
-            padding: 15px;
-            background: var(--month-bg);
-            box-shadow: var(--month-shadow);
-            animation: fadeIn 0.5s ease-out;
-            box-sizing: border-box;
+        .month{
+            border:1px solid #e5e7eb;
+            border-radius:14px;
+            padding:12px;
+            background:var(--month-bg);
+            box-shadow:var(--month-shadow);
+            animation:fadeIn .4s ease-out;
+            margin:0;
+            width:100%;
+            overflow:hidden;
         }
-
-        .current-month {
-            border: 3px solid var(--current-month-border);
-            background: var(--month-bg);
-            padding: 15px;
-            max-width: 100%;
-            box-sizing: border-box;
+        .current-month{
+            border:2px solid var(--current-month-border) !important;
+            padding:14px;
+            border-radius:16px;
+            box-shadow:0 6px 20px rgba(0,0,0,.12);
+            background:linear-gradient(135deg, var(--month-bg) 0%, rgba(124,58,237,.03) 100%);
         }
-
-        .month h3 {
-            text-align: center;
-            margin: 5px 0;
-            font-size: 1.3em;
-            font-weight: 600;
+        .current-month h3{
+            font-size:clamp(1.6rem, 5vw, 2rem) !important;
+            font-weight:700;
+            margin:0 0 8px;
+            text-align:center;
+            color:var(--current-month-border);
         }
-
-        .current-month h3 {
-            font-size: 1.8em;
+        .current-month table{font-size:clamp(1rem, 2.5vw, 1.2rem) !important;}
+        .current-month th{
+            padding:clamp(8px, 2vw, 10px);
+            font-size:clamp(0.85rem, 2vw, 1rem);
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .current-month td{
+            padding:clamp(9px, 2.2vw, 12px);
+            font-size:clamp(0.9rem, 2.1vw, 1rem);
         }
-
-        .current-month table {
-            font-size: 1.1em;
+        .month h3{
+            text-align:center;
+            margin:0 0 6px;
+            font-weight:600;
+            font-size:clamp(1.1rem, 3vw, 1.3rem);
         }
-
-        th {
-            background: #e5e7eb;
-            padding: 8px;
-            font-size: 0.95em;
-            font-weight: 400;
+        table{width:100%;border-collapse:collapse;}
+        th{
+            background:var(--header-bg);
+            color:var(--header-text) !important;
+            padding:6px;
+            font-size:clamp(0.8rem, 2vw, 0.9rem);
+            font-weight:500;
         }
-
-        .current-month th {
-            padding: 10px;
-            font-size: 1.05em;
+        td{
+            text-align:center;
+            padding:8px;
+            border:1px solid #e5e7eb;
+            font-size:clamp(0.85rem, 2vw, 0.9rem);
+            cursor:pointer;
+            transition:all .2s ease;
         }
-
-        td {
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            font-size: 0.95em;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
+        td:hover:not(:empty){
+            transform:scale(1.05);
+            box-shadow:0 2px 6px rgba(0,0,0,.1);
         }
-
-        td:hover:not(:empty) {
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .alternado1{background-color:var(--alternado1);}
+        .alternado2{background-color:var(--alternado2);}
+        .today{
+            border:2px solid #ef4444;
+            border-radius:50%;
+            padding:3px 6px;
+            display:inline-block;
+            font-weight:600;
+            font-size:0.9em;
         }
-
-        .current-month td {
-            padding: 12px;
-            font-size: 1.05em;
+        .current-month .today{
+            padding:4px 8px;
+            font-size:1em;
         }
-
-        .alternado1 {
-            background-color: var(--alternado1);
+        .legend{
+            margin:14px auto;
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:10px;
+            font-size:clamp(0.8rem, 2vw, 0.9rem);
         }
-
-        .alternado2 {
-            background-color: var(--alternado2);
+        .legend span{
+            padding:5px 12px;
+            border-radius:8px;
+            transition:transform .2s;
         }
-
-        .today {
-            border: 2px solid #ef4444;
-            border-radius: 50%;
-            padding: 4px 8px;
-            display: inline-block;
+        .legend span:hover{transform:translateY(-1px);}
+        .legend .alternado1{background-color:var(--alternado1);}
+        .legend .alternado2{background-color:var(--alternado2);}
+        .modal{
+            display:none;
+            position:fixed;
+            top:0;left:0;
+            width:100%;height:100%;
+            background:rgba(0,0,0,.5);
+            z-index:1000;
+            animation:fadeInModal .3s ease-out;
         }
-
-        .current-month .today {
-            padding: 5px 10px;
+        .modal-content{
+            position:absolute;
+            top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            background:var(--month-bg);
+            padding:18px;
+            border-radius:12px;
+            box-shadow:0 6px 20px rgba(0,0,0,.25);
+            max-width:340px;
+            width:88%;
+            text-align:center;
         }
-
-        .legend {
-            margin: 20px auto;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
+        .modal-content p{
+            margin:0 0 16px;
+            font-size:clamp(0.95rem, 2.5vw, 1.1rem);
+            font-weight:500;
         }
-
-        .legend span {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 16px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            transition: transform 0.2s ease;
+        .modal-content button{
+            padding:8px 16px;
+            background:#3b82f6;
+            color:#fff;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:clamp(0.9rem, 2vw, 0.95rem);
         }
-
-        .legend span:hover {
-            transform: translateY(-2px);
+        .modal-content button:hover{background:#2563eb;}
+        .theme-toggle{
+            position:fixed;
+            top:12px;
+            right:12px;
+            z-index:100;
         }
-
-        .legend .alternado1 {
-            background-color: var(--alternado1);
+        .theme-toggle input{display:none;}
+        .theme-toggle label{
+            display:block;
+            width:46px;
+            height:24px;
+            background:#d1d5db;
+            border-radius:12px;
+            position:relative;
+            cursor:pointer;
+            transition:background .3s ease;
         }
-
-        .legend .alternado2 {
-            background-color: var(--alternado2);
+        .theme-toggle label::before{
+            content:'Sun';
+            position:absolute;
+            top:2px;left:2px;
+            width:20px;height:20px;
+            background:#fff;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:12px;
+            transition:transform .3s ease,content .3s ease;
         }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            animation: fadeInModal 0.3s ease-out;
+        .theme-toggle input:checked+label{background:#4b5563;}
+        .theme-toggle input:checked+label::before{
+            content:'Moon';
+            transform:translateX(22px);
         }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--month-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            color: var(--text-color);
+        .year-selector{
+            margin:8px 0;
+            text-align:center;
         }
-
-        .modal-content p {
-            margin: 0 0 20px;
-            font-size: 1.1em;
-            font-weight: 400;
+        .year-selector select{
+            padding:8px 14px;
+            font-size:clamp(0.9rem, 2.5vw, 1rem);
+            border-radius:8px;
+            border:1px solid #e5e7eb;
+            background:var(--month-bg);
+            color:var(--text-color);
+            cursor:pointer;
+            min-width:110px;
         }
-
-        .modal-content button {
-            padding: 8px 16px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background 0.3s ease;
+        .lang-selector{
+            position:fixed;
+            top:12px;
+            right:66px;
+            display:flex;
+            gap:6px;
+            z-index:100;
         }
-
-        .modal-content button:hover {
-            background: #2563eb;
+        .lang-btn{
+            cursor:pointer;
+            font-size:1.3em;
+            opacity:0.7;
+            transition:opacity .2s;
         }
+        .lang-btn.active{opacity:1;font-weight:bold;}
 
-        /* Theme Toggle Switch */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: inline-block;
-        }
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes fadeInModal{from{opacity:0;}to{opacity:1;}}
 
-        .theme-toggle input {
-            display: none;
-        }
-
-        .theme-toggle label {
-            display: block;
-            width: 48px;
-            height: 24px;
-            background: #d1d5db;
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .theme-toggle label::before {
-            content: '☀️';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            transition: transform 0.3s ease, background 0.3s ease;
-        }
-
-        .theme-toggle input:checked + label {
-            background: #4b5563;
-        }
-
-        .theme-toggle input:checked + label::before {
-            content: '🌙';
-            transform: translateX(24px);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
+        /* RESPONSIVO */
+        @media (min-width: 901px) {
+            .calendar-container{
+                grid-template-columns: minmax(340px, 400px) 1fr;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            .current-month-container{grid-column:1;}
+            .other-months-container{grid-column:2;}
         }
 
-        @keyframes fadeInModal {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+        @media (max-width: 600px) {
+            body{padding:10px;}
+            .month{padding:10px;}
+            .current-month{padding:12px;border-width:2px;}
+            .current-month h3{font-size:1.7rem !important;}
+            .current-month table{font-size:1.05rem !important;}
+            .current-month th,.current-month td{padding:7px;}
+            .legend{gap:8px;}
+            .legend span{font-size:0.8rem;padding:4px 10px;}
+            .year-selector select{padding:7px 12px;font-size:0.9rem;}
+            .modal-content{padding:14px;}
+            .modal-content p{font-size:0.95rem;}
+            .modal-content button{padding:7px 14px;font-size:0.85rem;}
+            .theme-toggle{top:8px;right:8px;}
+            .lang-selector{top:8px;right:60px;gap:5px;}
+            .lang-btn{font-size:1.1em;}
+            .theme-toggle label{width:40px;height:20px;}
+            .theme-toggle label::before{width:16px;height:16px;font-size:11px;}
+            .theme-toggle input:checked+label::before{transform:translateX(20px);}
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 900px) {
-            .calendar-container {
-                grid-template-columns: 1fr;
+        @media (max-width: 400px) {
+            .other-months-container{
+                grid-template-columns:1fr;
             }
-
-            .current-month-container, .other-months-container {
-                grid-column: 1;
-                max-width: 100%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .month {
-                max-width: 100%;
-            }
-
-            .current-month {
-                max-width: 100%;
-            }
-
-            h1 {
-                font-size: 1.6em;
-            }
-
-            .month h3 {
-                font-size: 1.2em;
-            }
-
-            .current-month h3 {
-                font-size: 1.5em;
-            }
-
-            th, td {
-                padding: 8px;
-                font-size: 0.85em;
-            }
-
-            .current-month th, .current-month td {
-                padding: 10px;
-                font-size: 0.95em;
-            }
-
-            .legend {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .legend span {
-                font-size: 0.85em;
-                padding: 5px 12px;
-            }
-
-            .modal-content {
-                padding: 15px;
-            }
-
-            .modal-content p {
-                font-size: 1em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-
-            .month {
-                margin: 5px 0;
-                padding: 10px;
-            }
-
-            .current-month {
-                padding: 12px;
-            }
-
-            th, td {
-                padding: 6px;
-                font-size: 0.75em;
-            }
-
-            .current-month th, .current-month td {
-                padding: 8px;
-                font-size: 0.85em;
-            }
-
-            .today {
-                padding: 3px 6px;
-            }
-
-            .current-month .today {
-                padding: 4px 8px;
-            }
-
-            .legend span {
-                font-size: 0.75em;
-                padding: 4px 10px;
-            }
-
-            h1 {
-                font-size: 1.4em;
-            }
-
-            .current-month h3 {
-                font-size: 1.3em;
-            }
-
-            .theme-toggle {
-                top: 10px;
-                right: 10px;
-            }
-
-            .theme-toggle label {
-                width: 40px;
-                height: 20px;
-            }
-
-            .theme-toggle label::before {
-                width: 16px;
-                height: 16px;
-                font-size: 12px;
-            }
-
-            .theme-toggle input:checked + label::before {
-                transform: translateX(20px);
-            }
-
-            .modal-content {
-                width: 85%;
-                padding: 12px;
-            }
-
-            .modal-content p {
-                font-size: 0.9em;
-            }
-
-            .modal-content button {
-                padding: 6px 12px;
-                font-size: 0.85em;
-            }
+            .month{padding:8px;}
+            .current-month h3{font-size:1.5rem !important;}
+            .current-month table{font-size:1rem !important;}
+            th,td{padding:5px;font-size:0.75rem;}
+            .current-month th,.current-month td{padding:6px;}
+            .today{padding:2px 4px;}.current-month .today{padding:3px 6px;}
+            h1{font-size:1.3rem;}
         }
     </style>
 </head>
 <body>
+    <!-- Idioma -->
+    <div class="lang-selector">
+        <span class="lang-btn active" data-lang="pt">PT</span>
+        <span class="lang-btn" data-lang="en">EN</span>
+        <span class="lang-btn" data-lang="es">ES</span>
+    </div>
+
+    <!-- Tema -->
     <div class="theme-toggle">
-        <input type="checkbox" id="themeSwitch" onchange="toggleTheme()" aria-label="Alternar tema" role="switch" aria-checked="false">
+        <input type="checkbox" id="themeSwitch" onchange="toggleTheme()" aria-label="Alternar tema">
         <label for="themeSwitch"></label>
     </div>
-    <h1>Condomínio Veronique<br>Dias de Abastecimento de Água</h1>
-    <div class="legend">
-        <span class="alternado1">PARTE BAIXA</span>
-        <span class="alternado2">PARTE ALTA</span>
-        <span style="border: 2px solid #ef4444; border-radius: 50%; padding: 4px 12px;">HOJE</span>
+
+    <!-- Título -->
+    <h1>Condomínio Veronique<br><span id="subtitle">Dias de Abastecimento de Água</span></h1>
+
+    <!-- Ano -->
+    <div class="year-selector">
+        <label for="yearSelect" class="sr-only" id="year-label">Selecionar Ano</label>
+        <select id="yearSelect" onchange="updateCalendar()"></select>
     </div>
+
+    <!-- Legenda -->
+    <div class="legend">
+        <span class="alternado1" id="legend-low">PARTE BAIXA</span>
+        <span class="alternado2" id="legend-high">PARTE ALTA</span>
+        <span style="border:2px solid #ef4444;border-radius:50%;padding:3px 10px;" id="legend-today">HOJE</span>
+    </div>
+
+    <!-- Calendário -->
     <div class="calendar">
         <div class="calendar-container" id="calendar-container">
             <div class="current-month-container" id="current-month"></div>
             <div class="other-months-container" id="other-months"></div>
         </div>
     </div>
+
+    <!-- Modal -->
     <div class="modal" id="dayModal" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
         <div class="modal-content">
             <p id="modalMessage"></p>
-            <button onclick="fecharModal()">Fechar</button>
+            <button id="modal-close">Fechar</button>
         </div>
     </div>
 
     <script>
-        const meses = [
-            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-        ];
-        const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-        const currentMonthContainer = document.getElementById('current-month');
-        const otherMonthsContainer = document.getElementById('other-months');
-        const modal = document.getElementById('dayModal');
-        const modalMessage = document.getElementById('modalMessage');
-        const themeSwitch = document.getElementById('themeSwitch');
+        /* ---------- TRADUÇÕES ---------- */
+        const translations = {
+            pt: {
+                subtitle: "Dias de Abastecimento de Água",
+                yearLabel: "Selecionar Ano",
+                legendLow: "PARTE BAIXA",
+                legendHigh: "PARTE ALTA",
+                legendToday: "HOJE",
+                modalClose: "Fechar",
+                modalMessage: (d, p) => `Dia ${d}: Água na Parte ${p}`,
+                months: ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"],
+                days: ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"]
+            },
+            en: {
+                subtitle: "Water Supply Days",
+                yearLabel: "Select Year",
+                legendLow: "LOWER PART",
+                legendHigh: "UPPER PART",
+                legendToday: "TODAY",
+                modalClose: "Close",
+                modalMessage: (d, p) => `Day ${d}: Water in the ${p} Part`,
+                months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+                days: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+            },
+            es: {
+                subtitle: "Días de Abastecimiento de Agua",
+                yearLabel: "Seleccionar Año",
+                legendLow: "PARTE BAJA",
+                legendHigh: "PARTE ALTA",
+                legendToday: "HOY",
+                modalClose: "Cerrar",
+                modalMessage: (d, p) => `Día ${d}: Agua en la Parte ${p}`,
+                months: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+                days: ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]
+            }
+        };
 
+        let currentLang = 'pt';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('year-label').textContent = t.yearLabel;
+            document.getElementById('legend-low').textContent = t.legendLow;
+            document.getElementById('legend-high').textContent = t.legendHigh;
+            document.getElementById('legend-today').textContent = t.legendToday;
+            document.getElementById('modal-close').textContent = t.modalClose;
+            updateCalendar();
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLanguage(b.dataset.lang)));
+
+        /* ---------- DADOS ---------- */
         const hoje = new Date();
         const hojeAno = hoje.getFullYear();
         const hojeMes = hoje.getMonth();
         const hojeDia = hoje.getDate();
 
+        const currentMonthContainer = document.getElementById('current-month');
+        const otherMonthsContainer = document.getElementById('other-months');
+        const modal = document.getElementById('dayModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const themeSwitch = document.getElementById('themeSwitch');
+        const yearSelect = document.getElementById('yearSelect');
+
+        /* ---------- MODAL ---------- */
         function mostrarAlertaDia(classe, dia) {
-            const parte = classe === 'alternado1' ? 'Baixa' : 'Alta';
-            modalMessage.textContent = `Hoje é dia de água na Parte ${parte}`;
+            const t = translations[currentLang];
+            const part = classe === 'alternado1' 
+                ? (currentLang === 'en' ? 'Lower' : currentLang === 'es' ? 'Baja' : 'Baixa')
+                : (currentLang === 'en' ? 'Upper' : currentLang === 'es' ? 'Alta' : 'Alta');
+            modalMessage.textContent = t.modalMessage(dia, part);
             modal.style.display = 'block';
             modal.querySelector('button').focus();
         }
+        function fecharModal() { modal.style.display = 'none'; }
+        modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'block') fecharModal(); });
 
-        function fecharModal() {
-            modal.style.display = 'none';
-        }
-
-        modal.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                fecharModal();
-            }
-        });
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && modal.style.display === 'block') {
-                fecharModal();
-            }
-        });
-
-        function criarCalendarioMes(mes, ano, isCurrentMonth = false) {
+        /* ---------- CALENDÁRIO ---------- */
+        function criarCalendarioMes(mes, ano, isCurrentMonth = false, isCurrentYear = false) {
+            const t = translations[currentLang];
             const data = new Date(ano, mes, 1);
             const primeiroDia = (data.getDay() + 6) % 7;
             const diasNoMes = new Date(ano, mes + 1, 0).getDate();
             const dataReferencia = new Date(2025, 0, 1);
-            const milissegundosPorDia = 1000 * 60 * 60 * 24;
+            const msDia = 86400000;
 
-            let classeMes = isCurrentMonth ? 'month current-month' : 'month';
-            let html = `<div class="${classeMes}" aria-label="Calendário de ${meses[mes]} ${ano}"><h3>${meses[mes]}</h3><table><tr>`;
-            for (const dia of dias) {
-                html += `<th>${dia}</th>`;
-            }
+            const classeMes = isCurrentMonth ? 'month current-month' : 'month';
+            let html = `<div class="${classeMes}" aria-label="Calendário de ${t.months[mes]} ${ano}">
+                          <h3>${t.months[mes]} ${ano}</h3><table><tr>`;
+            for (const d of t.days) html += `<th>${d}</th>`;
             html += '</tr><tr>';
 
             let diaAtual = 1;
@@ -608,36 +446,70 @@
                         html += '<td></td>';
                     } else {
                         const dataAtual = new Date(ano, mes, diaAtual);
-                        const diasDesdeReferencia = Math.floor((dataAtual - dataReferencia) / milissegundosPorDia);
-                        let classe = diasDesdeReferencia % 2 === 0 ? 'alternado1' : 'alternado2';
+                        const diasDesdeRef = Math.floor((dataAtual - dataReferencia) / msDia);
+                        const classe = diasDesdeRef % 2 === 0 ? 'alternado1' : 'alternado2';
                         let content = diaAtual;
 
-                        if (ano === hojeAno && mes === hojeMes && diaAtual === hojeDia) {
-                            content = `<span class="today" aria-label="Hoje">${diaAtual}</span>`;
+                        if (isCurrentYear && mes === hojeMes && diaAtual === hojeDia) {
+                            content = `<span class="today" aria-label="${t.legendToday}">${diaAtual}</span>`;
                         }
 
-                        html += `<td class="${classe}" onclick="mostrarAlertaDia('${classe}', ${diaAtual})" aria-label="Dia ${diaAtual} - ${classe === 'alternado1' ? 'Parte Baixa' : 'Parte Alta'}">${content}</td>`;
+                        const partLabel = classe === 'alternado1' 
+                            ? (currentLang === 'en' ? 'Lower' : currentLang === 'es' ? 'Baja' : 'Baixa')
+                            : (currentLang === 'en' ? 'Upper' : currentLang === 'es' ? 'Alta' : 'Alta');
+
+                        html += `<td class="${classe}" onclick="mostrarAlertaDia('${classe}', ${diaAtual})"
+                                   aria-label="Dia ${diaAtual} - ${partLabel}">${content}</td>`;
                         diaAtual++;
                     }
                 }
                 if (diaAtual > diasNoMes) break;
                 html += '</tr><tr>';
             }
-
             html += '</tr></table></div>';
             return html;
         }
 
-        currentMonthContainer.innerHTML = criarCalendarioMes(hojeMes, 2025, true);
-        for (let m = hojeMes + 1; m < 12; m++) {
-            otherMonthsContainer.innerHTML += criarCalendarioMes(m, 2025, false);
+        /* ---------- ATUALIZAÇÃO ---------- */
+        function updateCalendar() {
+            const selectedYear = parseInt(yearSelect.value);
+            const isCurrentYear = selectedYear === hojeAno;
+            const startMonth = isCurrentYear ? hojeMes : 0;
+
+            currentMonthContainer.innerHTML = criarCalendarioMes(startMonth, selectedYear, true, isCurrentYear);
+
+            let otherHtml = '';
+            for (let m = startMonth + 1; m < 12; m++) {
+                otherHtml += criarCalendarioMes(m, selectedYear, false, isCurrentYear);
+            }
+            otherMonthsContainer.innerHTML = otherHtml;
         }
 
+        /* ---------- ANO ---------- */
+        function populateYearSelect() {
+            yearSelect.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const y = hojeAno + i;
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === hojeAno) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+        }
+
+        /* ---------- TEMA ---------- */
         function toggleTheme() {
             const isDark = themeSwitch.checked;
             document.body.dataset.theme = isDark ? 'dark' : 'light';
             themeSwitch.setAttribute('aria-checked', isDark);
         }
+
+        /* ---------- INICIALIZAÇÃO ---------- */
+        populateYearSelect();
+        yearSelect.value = hojeAno;
+        updateCalendar();
+        yearSelect.addEventListener('change', updateCalendar);
     </script>
 </body>
 </html>
